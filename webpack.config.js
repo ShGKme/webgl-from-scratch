@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const { ESBuildPlugin } = require('esbuild-loader');
 
 module.exports = {
   entry: './src/index.ts',
@@ -22,9 +23,14 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
+        test: /\.ts$/,
+        loader: 'esbuild-loader',
         exclude: /node_modules/,
+        options: {
+          loader: 'ts',
+          target: 'es2020',
+          tsconfigRaw: require('./tsconfig.json'),
+        },
       },
       {
         test: /\.(png|svg|jpg|jpeg|gif|bmp)$/i,
@@ -51,6 +57,7 @@ module.exports = {
       title: 'WebGL',
       template: './src/index.html',
     }),
+    new ESBuildPlugin(),
   ],
 
   optimization: {
