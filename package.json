@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "start": "npm run serve",
+    "start:repl": "webpack serve --host 0.0.0.0",
     "build": "webpack",
     "serve": "webpack serve",
     "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
