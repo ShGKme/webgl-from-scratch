@@ -7,6 +7,10 @@ import { Cube } from '../models/Cude';
 import { Material } from '../core/Material';
 import { loadImage } from '../utils/img';
 import { degToRad } from '../utils/math';
+import { SceneShaderProgram } from '../core/ShaderPrograms/SceneShaderProgram';
+import { SkyboxShaderProgram } from '../core/ShaderPrograms/SkyboxShaderProgram';
+import { Skybox } from '../core/SceneObject/Skybox';
+import { SkyboxCube } from '../models/SkyboxCube';
 
 export class App {
   canvas: HTMLCanvasElement;
@@ -29,41 +33,28 @@ export class App {
 
     this.scene.camera = new Camera().setTranslation(new Float32Array([0, -100, 0]));
 
-    // const cube = new SceneObject(new Model(Cube)).setScale(new Float32Array([200, 200, 200]));
-    // cube.material = new Material();
-    // cube.material.diffuseImage = await loadImage(require('../assets/textures/luna/lunarrock_d.png'));
-    // cube.material.specularImage = await loadImage(require('../assets/textures/luna/lunarrock_s.png'));
-    // cube.material.normalImage = await loadImage(require('../assets/textures/luna/lunarrock_n.png'));
-    // cube.model.generateTangent();
-    // cube.material.color = new Float32Array([255, 0, 0]);
+    const skybox = new Skybox(new Model(SkyboxCube));
+    skybox.setScale(new Float32Array([2, 2, 2]));
+    skybox.shader = new SkyboxShaderProgram(this.scene.gl);
+    skybox.material = new Material();
+    skybox.material.cubeImage = [
+      await loadImage(require('../assets/textures/skybox/space/corona_ft.png')),
+      await loadImage(require('../assets/textures/skybox/space/corona_bk.png')),
+      await loadImage(require('../assets/textures/skybox/space/corona_up.png')),
+      await loadImage(require('../assets/textures/skybox/space/corona_dn.png')),
+      await loadImage(require('../assets/textures/skybox/space/corona_rt.png')),
+      await loadImage(require('../assets/textures/skybox/space/corona_lf.png')),
+    ];
+    this.scene.objects.push(skybox);
 
     const surface = new Surface();
     surface.material = new Material();
-    // surface.material.diffuseImage = await loadImage(require('../assets/textures/luna/lunarrock_d.png'));
-    // surface.material.specularImage = await loadImage(require('../assets/textures/luna/lunarrock_s.png'));
-    // surface.material.normalImage = await loadImage(require('../assets/textures/luna/lunarrock_n.png'));
-    // // surface.material.normalImage = await loadImage(require('../assets/textures/normal_map.bmp'));
-    // surface.material.hardness = 300;
-    //
-    surface.material.diffuseImage = await loadImage(
-      require('../assets/textures/lunar_3/terrainbase_material_lunar_2_basecolor.png'),
-    );
-    surface.material.specularImage = await loadImage(
-      require('../assets/textures/lunar/terrainbase_material_lunar_ambientocclusion.png'),
-    );
-    surface.material.normalImage = await loadImage(
-      require('../assets/textures/lunar_3/terrainbase_material_lunar_2_normal.png'),
-    );
-    // surface.material.diffuseImage = await loadImage(require('../assets/textures/luna/lunarrock_d.png'));
-    // surface.material.specularImage = await loadImage(require('../assets/textures/luna/lunarrock_s.png'));
-    // surface.material.normalImage = await loadImage(require('../assets/textures/luna/lunarrock_n.png'));
-    // surface.material.normalImage = await loadImage(require('../assets/textures/normal_map.bmp'));
+    surface.shader = new SceneShaderProgram(this.scene.gl);
+    surface.material.diffuseImage = await loadImage(require('../assets/textures/lunar_3/basecolor.png'));
+    surface.material.specularImage = await loadImage(require('../assets/textures/lunar/ambientocclusion.png'));
+    surface.material.normalImage = await loadImage(require('../assets/textures/lunar_3/normal.png'));
     surface.material.hardness = 300;
-
     await surface.generateMesh(require('../assets/textures/terrainbase_material_lunar_2_height_conv.png'), 1);
-    // await surface.generateMesh(require('../assets/textures/terrainbase_material_lunar_2_height_conv.png'), 1024, 1);
-    // await surface.generateMesh(require('../assets/heightmaps/island-height.png'), 1024, 1);
-    // await surface.generateMesh(require('../assets/heightmaps/mini.png'), 20, 1);
     surface.setScale(new Float32Array([2, 2, 2])).setTranslation(new Float32Array([-255.5, 0, -255.5]));
     this.surface = surface;
     this.scene.objects.push(surface);
@@ -104,10 +95,8 @@ export class App {
       'pointerlockchange',
       () => {
         if (document.pointerLockElement === this.canvas) {
-          console.log(1);
           this.canvas.addEventListener('mousemove', mouseMoveHandler, false);
         } else {
-          console.log(2);
           this.canvas.removeEventListener('mousemove', mouseMoveHandler, false);
         }
       },

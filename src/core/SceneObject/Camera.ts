@@ -23,15 +23,12 @@ export class Camera extends SceneObject {
     this.translation[0] -= Math.sin(-this.orientation.yaw) * delta;
     this.translation[2] -= Math.cos(-this.orientation.yaw) * delta;
     this.translation[1] = -surface.height(-this.translation[0], -this.translation[2]) - 20;
-    console.log(this.translation.toString());
-    // terrain−>constrain(m position, m height);
   }
 
   strafe(delta: number) {
     const angle: number = this.orientation.yaw - Math.PI / 2;
     this.translation[0] -= Math.sin(-angle) * delta;
     this.translation[2] -= Math.cos(-angle) * delta;
-    // m terrain−>constrain(m position, m height);
   }
 
   yaw(angle: number) {
@@ -53,5 +50,9 @@ export class Camera extends SceneObject {
       this.translation[1],
       this.translation[2],
     );
+  }
+
+  viewMatrix2() {
+    return Mat4Utils.rotate(Mat4Utils.identity(), this.orientation.pitch, this.orientation.yaw, this.orientation.roll);
   }
 }
