@@ -2,9 +2,10 @@ import { Model } from '../Model';
 import { Vec3 } from '../../types';
 import { Mat4Utils } from '../../utils/math';
 import { Material } from '../Material';
-import { LocationsMap } from '../Locations';
-
-let textureId = 0;
+import { getNewTextureId } from '../TextureStore';
+import { SceneShaderProgram } from '../ShaderPrograms/SceneShaderProgram';
+import { Scene } from '../Scene';
+import { ShaderProgramInterface } from '../ShaderPrograms/ShaderProgram.interface';
 
 /**
  * Model instance placed on the scene
@@ -16,6 +17,7 @@ export class SceneObject {
   scale: Vec3 = new Float32Array([0, 0, 0]);
 
   material: Material;
+  shader: ShaderProgramInterface;
 
   indexBuffer: WebGLBuffer;
   vertexBuffer: WebGLBuffer;
@@ -58,106 +60,67 @@ export class SceneObject {
     return M;
   }
 
-  bindTextures(gl: WebGLRenderingContext) {
+  bufferTextures(gl: WebGLRenderingContext) {
     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-    this.diffuseTexture = gl.createTexture();
-    this.diffuseTextureId = textureId++;
-    gl.activeTexture(gl[`TEXTURE${this.diffuseTextureId}`]);
-    gl.bindTexture(gl.TEXTURE_2D, this.diffuseTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.material.diffuseImage);
-    gl.generateMipmap(gl.TEXTURE_2D);
+    const bindTexture = (image, id, texture) => {
+      gl.activeTexture(gl[`TEXTURE${id}`]);
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+      gl.generateMipmap(gl.TEXTURE_2D);
+    };
 
-    this.specularTexture = gl.createTexture();
-    this.specularTextureId = textureId++;
-    gl.activeTexture(gl[`TEXTURE${this.specularTextureId}`]);
-    gl.bindTexture(gl.TEXTURE_2D, this.specularTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.material.specularImage);
-    gl.generateMipmap(gl.TEXTURE_2D);
+    if (this.material.diffuseImage) {
+      this.diffuseTexture = gl.createTexture();
+      this.diffuseTextureId = getNewTextureId();
+      bindTexture(this.material.diffuseImage, this.diffuseTextureId, this.diffuseTexture);
+    }
 
-    this.normalTexture = gl.createTexture();
-    this.normalTextureId = textureId++;
-    gl.activeTexture(gl[`TEXTURE${this.normalTextureId}`]);
-    gl.bindTexture(gl.TEXTURE_2D, this.normalTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.material.normalImage);
-    gl.generateMipmap(gl.TEXTURE_2D);
+    if (this.material.specularImage) {
+      this.specularTexture = gl.createTexture();
+      this.specularTextureId = getNewTextureId();
+      bindTexture(this.material.specularImage, this.specularTextureId, this.specularTexture);
+    }
+
+    if (this.material.normalImage) {
+      this.normalTexture = gl.createTexture();
+      this.normalTextureId = getNewTextureId();
+      bindTexture(this.material.normalImage, this.normalTextureId, this.normalTexture);
+    }
   }
 
-  bindDataToBuffers(gl: WebGLRenderingContext) {
+  bufferData(gl: WebGLRenderingContext) {
     this.indexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(this.model.indices), gl.STATIC_DRAW);
 
     this.vertexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.model.vertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, this.model.vertices, gl.STATIC_DRAW);
 
-    // this.colorsBuffer = gl.createBuffer();
-    // gl.bindBuffer(gl.ARRAY_BUFFER, this.colorsBuffer);
-    // let colors = [];
-    // for (let i = 0; i < this.model.vertexes.length; i++) {
-    //   colors.push(...this.color);
-    // }
-    // gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(colors), gl.STATIC_DRAW);
+    if (this.model.normals) {
+      this.normalBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, this.model.normals, gl.STATIC_DRAW);
+    }
 
-    this.normalBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.model.normals), gl.STATIC_DRAW);
+    if (this.model.uv) {
+      this.uvBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, this.model.uv, gl.STATIC_DRAW);
+    }
 
-    this.uvBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.model.uv), gl.STATIC_DRAW);
-
-    this.tangentBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.tangentBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.model.tangent), gl.STATIC_DRAW);
+    if (this.model.tangent) {
+      this.tangentBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.tangentBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, this.model.tangent, gl.STATIC_DRAW);
+    }
   }
 
-  bindMesh(gl: WebGLRenderingContext, locations: LocationsMap) {
-    // Bind Vertexes
-    gl.enableVertexAttribArray(locations['a_position']);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-    gl.vertexAttribPointer(locations['a_position'], 3, gl.FLOAT, false, 0, 0);
-
-    // Normals
-    gl.enableVertexAttribArray(locations['a_normal']);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
-    gl.vertexAttribPointer(locations['a_normal'], 3, gl.FLOAT, false, 0, 0);
-
-    // UV
-    gl.enableVertexAttribArray(locations['a_uv']);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
-    gl.vertexAttribPointer(locations['a_uv'], 2, gl.FLOAT, true, 0, 0);
-
-    // Tangent
-    gl.enableVertexAttribArray(locations['a_tangent']);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.tangentBuffer);
-    gl.vertexAttribPointer(locations['a_tangent'], 3, gl.FLOAT, false, 0, 0);
-  }
-
-  bindMaterial(gl: WebGLRenderingContext, locations: LocationsMap) {
-    gl.uniform3fv(locations['u_light_color'], this.material.lightColor);
-    gl.uniform3fv(locations['u_specular_color'], this.material.specularColor);
-    gl.uniform3fv(locations['u_ambient_color'], this.material.ambientColor);
-    gl.uniform1i(locations['u_useAmbient'], this.material.useAmbient);
-    gl.uniform1i(locations['u_useSpecular'], this.material.useSpecular);
-    gl.uniform1i(locations['u_useDiffuse'], this.material.useDiffuse);
-    gl.uniform1f(locations['u_hardness'], this.material.hardness);
-
-    gl.uniform1i(locations['u_texture_diffuse'], this.diffuseTextureId);
-    gl.uniform1i(locations['u_texture_specular'], this.specularTextureId);
-    gl.uniform1i(locations['u_texture_normal'], this.normalTextureId);
-  }
-
-  render(gl: WebGLRenderingContext, locations: LocationsMap) {
-    this.bindMesh(gl, locations);
-    this.bindMaterial(gl, locations);
-
-    // Indices
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-    gl.drawElements(gl.TRIANGLES, this.model.indices.length, gl.UNSIGNED_INT, 0);
+  renderOnScene(scene: Scene) {
+    this.shader.renderObjectOnScene(this, scene);
   }
 }

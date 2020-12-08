@@ -11,7 +11,7 @@ export type Locations =
   | 'u_MVP'
   | 'u_MV1T'
   | 'u_light_position'
-  | 'u_light_color'
+  | 'u_diffuse_color'
   | 'u_specular_color'
   | 'u_ambient_color'
   | 'u_camera_position'
