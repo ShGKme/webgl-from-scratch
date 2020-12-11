@@ -1,4 +1,5 @@
 import { Color } from '../types';
+import { Texture } from './Texture';
 
 export class Material {
   diffuseColor: Color = new Float32Array([0.7, 0.7, 0.7]);
@@ -10,7 +11,7 @@ export class Material {
   useDiffuse: number = 1;
   hardness: number = 300.0;
 
-  diffuseImage: HTMLImageElement;
-  specularImage: HTMLImageElement;
-  normalImage: HTMLImageElement;
+  diffuseTexture: Texture;
+  specularTexture: Texture;
+  normalTexture: Texture;
 }

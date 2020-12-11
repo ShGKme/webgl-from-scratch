@@ -1,20 +1,24 @@
-import { initShaderProgram } from '../../utils/webgl';
 import VertexShader from '../../shaders/skybox/vertex.glsl';
 import FragmentShader from '../../shaders/skybox/fragment.glsl';
-import { LocationsMap } from '../Locations';
-import { ShaderProgramInterface } from './ShaderProgram.interface';
 import { SceneObject } from '../SceneObject/SceneObject';
 import { Scene } from '../Scene';
 import { Mat4Utils } from '../../utils/math';
+import { AbstractShader } from './AbstractShader';
 
-export class SkyboxShaderProgram implements ShaderProgramInterface {
-  program: WebGLProgram;
-  locations: LocationsMap = {};
-  gl: WebGLRenderingContext;
+export class SkyboxShader extends AbstractShader {
+  static vertexShader: string = VertexShader;
+  static fragmentShader: string = FragmentShader;
 
-  constructor(gl: WebGLRenderingContext) {
-    this.gl = gl;
-    this.program = initShaderProgram(this.gl, VertexShader, FragmentShader);
+  protected configure() {
+    super.configure();
+
+    this.gl.enable(this.gl.CULL_FACE);
+    this.gl.disable(this.gl.DEPTH_TEST);
+    this.gl.getExtension('OES_element_index_uint');
+  }
+
+  protected getLocations() {
+    super.getLocations();
 
     this.locations['a_position'] = this.gl.getAttribLocation(this.program, 'a_position') as number;
     this.locations['a_uv'] = this.gl.getAttribLocation(this.program, 'a_uv') as number;
@@ -23,15 +27,9 @@ export class SkyboxShaderProgram implements ShaderProgramInterface {
     this.locations['u_diffuse_color'] = this.gl.getUniformLocation(this.program, 'u_diffuse_color') as number;
     this.locations['u_texture_diffuse'] = this.gl.getUniformLocation(this.program, 'u_texture_diffuse') as number;
   }
-  use() {
-    this.gl.enable(this.gl.CULL_FACE);
-    this.gl.disable(this.gl.DEPTH_TEST);
-    this.gl.getExtension('OES_element_index_uint');
-    this.gl.useProgram(this.program);
-  }
 
   renderObjectOnScene(object: SceneObject, scene: Scene) {
-    this.use();
+    super.renderObjectOnScene(object, scene);
 
     const V = scene.camera.viewMatrix2();
     const MVP = Mat4Utils.multiply(Mat4Utils.multiply(scene.P, V), object.M());
@@ -49,17 +47,11 @@ export class SkyboxShaderProgram implements ShaderProgramInterface {
     this.gl.enableVertexAttribArray(this.locations['a_position']);
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.vertexBuffer);
     this.gl.vertexAttribPointer(this.locations['a_position'], 3, this.gl.FLOAT, false, 0, 0);
-
-    // if (object.uvBuffer) {
-    //   this.gl.enableVertexAttribArray(this.locations['a_uv']);
-    //   this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.uvBuffer);
-    //   this.gl.vertexAttribPointer(this.locations['a_uv'], 2, this.gl.FLOAT, true, 0, 0);
-    // }
   }
 
   private bindObjectMaterial(object: SceneObject) {
     this.gl.uniform3fv(this.locations['u_diffuse_color'], object.material.diffuseColor);
-    this.gl.uniform1i(this.locations['u_texture_diffuse'], object.diffuseTextureId);
+    this.gl.uniform1i(this.locations['u_texture_diffuse'], object.material.diffuseTexture.id);
   }
 
   private drawObject(object: SceneObject) {

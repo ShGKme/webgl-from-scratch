@@ -2,7 +2,6 @@ import { Color, Mat4, Vec3 } from '../types';
 import { degToRad, Mat4Utils } from '../utils/math';
 import { SceneObject } from './SceneObject/SceneObject';
 import { Camera } from './SceneObject/Camera';
-import { LocationsMap } from './Locations';
 
 export class Scene {
   FPS: number = 20;

@@ -2,8 +2,6 @@ import { Model } from '../Model';
 import { Vec3 } from '../../types';
 import { Mat4Utils } from '../../utils/math';
 import { Material } from '../Material';
-import { getNewTextureId } from '../TextureStore';
-import { SceneShaderProgram } from '../ShaderPrograms/SceneShaderProgram';
 import { Scene } from '../Scene';
 import { ShaderProgramInterface } from '../ShaderPrograms/ShaderProgram.interface';
 
@@ -24,14 +22,6 @@ export class SceneObject {
   normalBuffer: WebGLBuffer;
   uvBuffer: WebGLBuffer;
   tangentBuffer: WebGLBuffer;
-
-  diffuseTexture: WebGLTexture;
-  specularTexture: WebGLTexture;
-  normalTexture: WebGLTexture;
-
-  diffuseTextureId: number;
-  specularTextureId: number;
-  normalTextureId: number;
 
   constructor(model?: Model) {
     this.model = model;
@@ -65,31 +55,9 @@ export class SceneObject {
     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-    const bindTexture = (image, id, texture) => {
-      gl.activeTexture(gl[`TEXTURE${id}`]);
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-      gl.generateMipmap(gl.TEXTURE_2D);
-    };
-
-    if (this.material.diffuseImage) {
-      this.diffuseTexture = gl.createTexture();
-      this.diffuseTextureId = getNewTextureId();
-      bindTexture(this.material.diffuseImage, this.diffuseTextureId, this.diffuseTexture);
-    }
-
-    if (this.material.specularImage) {
-      this.specularTexture = gl.createTexture();
-      this.specularTextureId = getNewTextureId();
-      bindTexture(this.material.specularImage, this.specularTextureId, this.specularTexture);
-    }
-
-    if (this.material.normalImage) {
-      this.normalTexture = gl.createTexture();
-      this.normalTextureId = getNewTextureId();
-      bindTexture(this.material.normalImage, this.normalTextureId, this.normalTexture);
-    }
+    this.material?.diffuseTexture.buffer(gl);
+    this.material?.specularTexture.buffer(gl);
+    this.material?.normalTexture.buffer(gl);
   }
 
   bufferData(gl: WebGLRenderingContext) {

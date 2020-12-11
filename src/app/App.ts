@@ -7,10 +7,11 @@ import { Cube } from '../models/Cude';
 import { Material } from '../core/Material';
 import { loadImage } from '../utils/img';
 import { degToRad } from '../utils/math';
-import { SceneShaderProgram } from '../core/ShaderPrograms/SceneShaderProgram';
-import { SkyboxShaderProgram } from '../core/ShaderPrograms/SkyboxShaderProgram';
+import { PhongShader } from '../core/Shader/PhongShader';
+import { SkyboxShader } from '../core/Shader/SkyboxShader';
 import { Skybox } from '../core/SceneObject/Skybox';
 import { SkyboxCube } from '../models/SkyboxCube';
+import { Texture } from '../core/Texture';
 
 export class App {
   canvas: HTMLCanvasElement;
@@ -35,24 +36,36 @@ export class App {
 
     const skybox = new Skybox(new Model(SkyboxCube));
     skybox.setScale(new Float32Array([2, 2, 2]));
-    skybox.shader = new SkyboxShaderProgram(this.scene.gl);
+    skybox.shader = new SkyboxShader(this.scene.gl);
     skybox.material = new Material();
-    skybox.material.cubeImage = [
-      await loadImage(require('../assets/textures/skybox/space/corona_ft.png')),
-      await loadImage(require('../assets/textures/skybox/space/corona_bk.png')),
-      await loadImage(require('../assets/textures/skybox/space/corona_up.png')),
-      await loadImage(require('../assets/textures/skybox/space/corona_dn.png')),
-      await loadImage(require('../assets/textures/skybox/space/corona_rt.png')),
-      await loadImage(require('../assets/textures/skybox/space/corona_lf.png')),
-    ];
+    skybox.material.diffuseTexture = new Texture(
+      'cube',
+      await Promise.all([
+        loadImage(require('../assets/textures/skybox/space/corona_ft.png')),
+        loadImage(require('../assets/textures/skybox/space/corona_bk.png')),
+        loadImage(require('../assets/textures/skybox/space/corona_up.png')),
+        loadImage(require('../assets/textures/skybox/space/corona_dn.png')),
+        loadImage(require('../assets/textures/skybox/space/corona_rt.png')),
+        loadImage(require('../assets/textures/skybox/space/corona_lf.png')),
+      ]),
+    );
     this.scene.objects.push(skybox);
 
     const surface = new Surface();
     surface.material = new Material();
-    surface.shader = new SceneShaderProgram(this.scene.gl);
-    surface.material.diffuseImage = await loadImage(require('../assets/textures/lunar_3/basecolor.png'));
-    surface.material.specularImage = await loadImage(require('../assets/textures/lunar/ambientocclusion.png'));
-    surface.material.normalImage = await loadImage(require('../assets/textures/lunar_3/normal.png'));
+    surface.shader = new PhongShader(this.scene.gl);
+    surface.material.diffuseTexture = new Texture(
+      '2d',
+      await loadImage(require('../assets/textures/lunar_3/basecolor.png')),
+    );
+    surface.material.specularTexture = new Texture(
+      '2d',
+      await loadImage(require('../assets/textures/lunar/ambientocclusion.png')),
+    );
+    surface.material.normalTexture = new Texture(
+      '2d',
+      await loadImage(require('../assets/textures/lunar_3/normal.png')),
+    );
     surface.material.hardness = 300;
     await surface.generateMesh(require('../assets/textures/terrainbase_material_lunar_2_height_conv.png'), 1);
     surface.setScale(new Float32Array([2, 2, 2])).setTranslation(new Float32Array([-255.5, 0, -255.5]));

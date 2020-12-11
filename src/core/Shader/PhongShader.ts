@@ -1,21 +1,23 @@
-import { initShaderProgram } from '../../utils/webgl';
 import VertexShader from '../../shaders/vertex.glsl';
 import FragmentShader from '../../shaders/fragment.glsl';
-import { LocationsMap } from '../Locations';
-import { ShaderProgramInterface } from './ShaderProgram.interface';
 import { SceneObject } from '../SceneObject/SceneObject';
 import { Scene } from '../Scene';
 import { Mat4Utils } from '../../utils/math';
+import { AbstractShader } from './AbstractShader';
 
-export class SceneShaderProgram implements ShaderProgramInterface {
-  program: WebGLProgram;
-  locations: LocationsMap = {};
-  gl: WebGLRenderingContext;
+export class PhongShader extends AbstractShader {
+  static vertexShader: string = VertexShader;
+  static fragmentShader: string = FragmentShader;
 
-  constructor(gl: WebGLRenderingContext) {
-    this.gl = gl;
-    this.program = initShaderProgram(this.gl, VertexShader, FragmentShader);
+  protected configure() {
+    super.configure();
 
+    this.gl.enable(this.gl.CULL_FACE);
+    this.gl.enable(this.gl.DEPTH_TEST);
+    this.gl.getExtension('OES_element_index_uint');
+  }
+
+  protected getLocations() {
     this.locations['a_position'] = this.gl.getAttribLocation(this.program, 'a_position') as number;
     this.locations['a_normal'] = this.gl.getAttribLocation(this.program, 'a_normal') as number;
     this.locations['a_uv'] = this.gl.getAttribLocation(this.program, 'a_uv') as number;
@@ -41,16 +43,19 @@ export class SceneShaderProgram implements ShaderProgramInterface {
     this.locations['u_texture_specular'] = this.gl.getUniformLocation(this.program, 'u_texture_specular') as number;
     this.locations['u_texture_normal'] = this.gl.getUniformLocation(this.program, 'u_texture_normal') as number;
   }
-  use() {
-    this.gl.enable(this.gl.CULL_FACE);
-    this.gl.enable(this.gl.DEPTH_TEST);
-    this.gl.getExtension('OES_element_index_uint');
-    this.gl.useProgram(this.program);
-  }
 
   renderObjectOnScene(object: SceneObject, scene: Scene) {
-    this.use();
+    super.renderObjectOnScene(object, scene);
 
+    this.bindMatrices(object, scene);
+    this.bindAdditional(object, scene);
+    this.bindObjectMesh(object);
+    this.bindObjectMaterial(object);
+
+    this.drawObject(object);
+  }
+
+  protected bindMatrices(object: SceneObject, scene: Scene) {
     const MVP = Mat4Utils.multiply(Mat4Utils.multiply(scene.P, scene.V), object.M());
     const MV = Mat4Utils.multiply(scene.V, object.M());
     const MV1T = Mat4Utils.transpose(Mat4Utils.inverse(MV));
@@ -61,17 +66,15 @@ export class SceneShaderProgram implements ShaderProgramInterface {
     this.gl.uniformMatrix4fv(this.locations['u_P'], false, scene.P);
     this.gl.uniformMatrix4fv(this.locations['u_MV'], false, MV);
     this.gl.uniformMatrix4fv(this.locations['u_MV1T'], false, MV1T);
+  }
 
+  protected bindAdditional(object: SceneObject, scene: Scene) {
     this.gl.uniform1i(this.locations['u_useWorldLight'], 1);
     this.gl.uniform3fv(this.locations['u_light_position'], scene.lightPosition);
     this.gl.uniform3fv(this.locations['u_camera_position'], scene.cameraPosition);
-
-    this.bindObjectMesh(object);
-    this.bindObjectMaterial(object);
-    this.drawObject(object);
   }
 
-  private bindObjectMesh(object: SceneObject) {
+  protected bindObjectMesh(object: SceneObject) {
     this.gl.enableVertexAttribArray(this.locations['a_position']);
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.vertexBuffer);
     this.gl.vertexAttribPointer(this.locations['a_position'], 3, this.gl.FLOAT, false, 0, 0);
@@ -85,15 +88,9 @@ export class SceneShaderProgram implements ShaderProgramInterface {
       this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.uvBuffer);
       this.gl.vertexAttribPointer(this.locations['a_uv'], 2, this.gl.FLOAT, true, 0, 0);
     }
-
-    if (object.tangentBuffer) {
-      this.gl.enableVertexAttribArray(this.locations['a_tangent']);
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.tangentBuffer);
-      this.gl.vertexAttribPointer(this.locations['a_tangent'], 3, this.gl.FLOAT, false, 0, 0);
-    }
   }
 
-  private bindObjectMaterial(object: SceneObject) {
+  protected bindObjectMaterial(object: SceneObject) {
     this.gl.uniform3fv(this.locations['u_diffuse_color'], object.material.diffuseColor);
     this.gl.uniform3fv(this.locations['u_specular_color'], object.material.specularColor);
     this.gl.uniform3fv(this.locations['u_ambient_color'], object.material.ambientColor);
@@ -102,12 +99,11 @@ export class SceneShaderProgram implements ShaderProgramInterface {
     this.gl.uniform1i(this.locations['u_useDiffuse'], object.material.useDiffuse);
     this.gl.uniform1f(this.locations['u_hardness'], object.material.hardness);
 
-    this.gl.uniform1i(this.locations['u_texture_diffuse'], object.diffuseTextureId);
-    this.gl.uniform1i(this.locations['u_texture_specular'], object.specularTextureId);
-    this.gl.uniform1i(this.locations['u_texture_normal'], object.normalTextureId);
+    this.gl.uniform1i(this.locations['u_texture_diffuse'], object.material.diffuseTexture.id);
+    this.gl.uniform1i(this.locations['u_texture_specular'], object.material.specularTexture.id);
   }
 
-  private drawObject(object: SceneObject) {
+  protected drawObject(object: SceneObject) {
     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, object.indexBuffer);
     this.gl.drawElements(this.gl.TRIANGLES, object.model.indices.length, this.gl.UNSIGNED_INT, 0);
   }
