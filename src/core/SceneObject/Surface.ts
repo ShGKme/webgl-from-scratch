@@ -110,12 +110,12 @@ export class Surface extends SceneObject {
 
   private heightmap8ValueAt(x: number, z: number): number {
     const [r, g, b] = this.heightmapData.slice((x * this.size + z) * 4, (x * this.size + z) * 4 + 3);
-    return ((r + g + b) / 255 / 3) * 120;
+    return ((r + g + b) / 255 / 3) * (this.size / 4);
   }
 
   private heightmap16ValueAt(x: number, z: number): number {
     const [r, g, b] = this.heightmapData.slice((x * this.size + z) * 4, (x * this.size + z) * 4 + 3);
-    return ((r | (g << 8) | (b << 16)) / 255 ** 2) * 120;
+    return ((r | (g << 8) | (b << 16)) / 255 ** 2) * (this.size / 4);
   }
 
   height(x: number, z: number) {

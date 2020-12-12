@@ -1,5 +1,5 @@
-import VertexShader from '../shaders/pick/vertex.glsl';
-import FragmentShader from '../shaders/pick/fragment.glsl';
+import VertexShader from '../shaders/pick.vertex.glsl';
+import FragmentShader from '../shaders/pick.fragment.glsl';
 import { SceneObject } from '../SceneObject/SceneObject';
 import { Scene } from '../Scene';
 import { Mat4Utils, Vec3Utils } from '../utils/math';

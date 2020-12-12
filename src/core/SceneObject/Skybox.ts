@@ -9,7 +9,7 @@ export class Skybox extends SceneObject {
   M() {
     let M = Mat4Utils.identity();
     M = Mat4Utils.multiply(M, this.rotation);
-    M = Mat4Utils.multiply(M, this.scale);
+    M = Mat4Utils.scale(M, this.scale[0], this.scale[1], this.scale[2]);
     return M;
   }
 

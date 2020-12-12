@@ -13,22 +13,29 @@ function wrap(a: number, min: number, max: number) {
 }
 
 export class Camera extends SceneObject {
+  heightUnderSurface = 20;
+
   orientation = {
     yaw: 0,
     roll: 0,
     pitch: 0,
   };
 
-  move(delta: number, surface: Surface) {
+  move(delta: number, surface?: Surface) {
     this.translation[0] -= Math.sin(-this.orientation.yaw) * delta;
     this.translation[2] -= Math.cos(-this.orientation.yaw) * delta;
-    this.translation[1] = -surface.height(-this.translation[0], -this.translation[2]) - 20;
+    if (surface) {
+      this.translation[1] = -surface.height(-this.translation[0], -this.translation[2]) - this.heightUnderSurface;
+    }
   }
 
-  strafe(delta: number) {
+  strafe(delta: number, surface?: Surface) {
     const angle: number = this.orientation.yaw - Math.PI / 2;
     this.translation[0] -= Math.sin(-angle) * delta;
     this.translation[2] -= Math.cos(-angle) * delta;
+    if (surface) {
+      this.translation[1] = -surface.height(-this.translation[0], -this.translation[2]) - this.heightUnderSurface;
+    }
   }
 
   yaw(angle: number) {
@@ -43,16 +50,11 @@ export class Camera extends SceneObject {
     this.orientation.pitch = wrap(this.orientation.pitch - angle, 0, 2.0 * Math.PI);
   }
 
-  viewMatrix() {
-    return Mat4Utils.translate(
-      Mat4Utils.rotate(Mat4Utils.identity(), this.orientation.pitch, this.orientation.yaw, this.orientation.roll),
-      this.translation[0],
-      this.translation[1],
-      this.translation[2],
-    );
+  rotationMatrix() {
+    return Mat4Utils.rotate(Mat4Utils.identity(), this.orientation.pitch, this.orientation.yaw, this.orientation.roll);
   }
 
-  viewMatrix2() {
-    return Mat4Utils.rotate(Mat4Utils.identity(), this.orientation.pitch, this.orientation.yaw, this.orientation.roll);
+  viewMatrix() {
+    return Mat4Utils.translate(this.rotationMatrix(), this.translation[0], this.translation[1], this.translation[2]);
   }
 }

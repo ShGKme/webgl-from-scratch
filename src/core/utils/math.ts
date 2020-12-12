@@ -1,6 +1,6 @@
 // Some objects were taken from webglfundomentals.org
 
-import { Mat3, Mat4, Vec3, Vec4 } from '../types';
+import { Mat3, Mat4, Vec3, Vec4 } from '../../types';
 
 export const Vec3Utils = {
   // v * n
@@ -54,7 +54,20 @@ export function degToRad(d: number) {
 
 // Matrix 4x4 for Graphic
 export const Mat4Utils = {
-  // ??
+  frustumProjection(l: number, r: number, b: number, t: number, near: number, far: number): Mat4 {
+    const A = (r + l) / (r - l);
+    const B = (t + b) / (t - b);
+    const C = -(far + near) / (far - near);
+    const D = -(2 * far * near) / (far - near);
+    // prettier-ignore
+    return new Float32Array([
+      (2 * near) / (r - l), 0, A, 0,
+      0, (2 * near) / (t - b), B, 0,
+      0, 0, C, D,
+      0, 0, -1, 0,
+    ]);
+  },
+
   projection(width: number, height: number, depth: number): Mat4 {
     // Note: This matrix flips the Y axis so 0 is at the top.
     return new Float32Array([2 / width, 0, 0, 0, 0, -2 / height, 0, 0, 0, 0, 2 / depth, 0, -1, 1, 0, 1]);
@@ -369,6 +382,13 @@ export const Mat4Utils = {
   scale(m: Mat4, sx: number, sy: number, sz: number) {
     return Mat4Utils.multiply(m, Mat4Utils.scaling(sx, sy, sz));
   },
+
+  // normalize(m: Mat4) {
+  //   const v1: Vec4 = Vec.normalize new Float32Array([m[0], m[4], m[8], m[12]]);
+  //   const v2: Vec4 = Vec.normalize new Float32Array([m[1], m[5], m[9], m[13]]);
+  //   const v3: Vec4 = Vec.normalize new Float32Array([m[2], m[6], m[10], m[14]]);
+  //   const v4: Vec4 = Vec.normalize new Float32Array([m[3], m[7], m[11], m[15]]);
+  // },
 };
 
 // Matrix 3x3

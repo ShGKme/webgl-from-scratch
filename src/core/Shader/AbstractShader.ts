@@ -1,13 +1,11 @@
-import VertexShader from '../shaders/vertex.glsl';
-import FragmentShader from '../shaders/fragment.glsl';
 import { LocationsMap } from '../Locations';
 import { initShaderProgram } from '../utils/webgl';
 import { SceneObject } from '../SceneObject/SceneObject';
 import { Scene } from '../Scene';
 
 export class AbstractShader {
-  static vertexShader: string = VertexShader;
-  static fragmentShader: string = FragmentShader;
+  static vertexShader: string;
+  static fragmentShader: string;
 
   program: WebGLProgram;
   locations: LocationsMap = {};

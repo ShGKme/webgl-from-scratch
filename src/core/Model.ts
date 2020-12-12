@@ -1,5 +1,5 @@
 import { Vec2, Vec3 } from '../types';
-import { Vec3Utils } from '../utils/math';
+import { Vec3Utils } from './utils/math';
 
 export type ModelMeshData = {
   indices: Float32Array;
@@ -22,7 +22,18 @@ export class Model implements ModelData {
   tangent?: Float32Array = new Float32Array([]);
 
   constructor(data?: ModelData) {
-    data && Object.assign(this, data);
+    if (!data) {
+      return;
+    }
+    this.vertices = new Float32Array(data.vertices);
+    this.indices = new Float32Array(data.indices);
+    if (data.normals) {
+      this.normals = new Float32Array(data.normals);
+    }
+    if (data.uv) {
+      this.uv = new Float32Array(data.uv);
+    }
+    // data && Object.assign(this, data);
   }
 
   generateTangent() {

@@ -1,11 +1,18 @@
 import { PhongShader } from './PhongShader';
 import { SceneObject } from '../SceneObject/SceneObject';
-import VertexShader from '../shaders/tangent/vertex.glsl';
-import FragmentShader from '../shaders/tangent/fragment.glsl';
+import VertexShader from '../shaders/tangent.vertex.glsl';
+import FragmentShader from '../shaders/tangent.fragment.glsl';
 
 export class NormalMappingShader extends PhongShader {
   static vertexShader: string = VertexShader;
   static fragmentShader: string = FragmentShader;
+
+  protected getLocations() {
+    super.getLocations();
+
+    this.locations['a_tangent'] = this.gl.getAttribLocation(this.program, 'a_tangent') as number;
+    this.locations['u_texture_normal'] = this.gl.getUniformLocation(this.program, 'u_texture_normal') as number;
+  }
 
   protected bindObjectMesh(object: SceneObject) {
     super.bindObjectMesh(object);

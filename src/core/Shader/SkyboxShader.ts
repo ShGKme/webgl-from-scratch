@@ -1,5 +1,5 @@
-import VertexShader from '../shaders/skybox/vertex.glsl';
-import FragmentShader from '../shaders/skybox/fragment.glsl';
+import VertexShader from '../shaders/skybox.vertex.glsl';
+import FragmentShader from '../shaders/skybox.fragment.glsl';
 import { SceneObject } from '../SceneObject/SceneObject';
 import { Scene } from '../Scene';
 import { Mat4Utils } from '../utils/math';
@@ -31,7 +31,7 @@ export class SkyboxShader extends AbstractShader {
   renderObjectOnScene(object: SceneObject, scene: Scene) {
     super.renderObjectOnScene(object, scene);
 
-    const V = scene.camera.viewMatrix2();
+    const V = scene.camera.rotationMatrix();
     const MVP = Mat4Utils.multiply(Mat4Utils.multiply(scene.P, V), object.M());
     const MV = Mat4Utils.multiply(scene.V, object.M());
 

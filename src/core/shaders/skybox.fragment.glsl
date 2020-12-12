@@ -7,5 +7,4 @@ varying vec3 v_uv;
 
 void main() {
     gl_FragColor = textureCube(u_texture_diffuse, v_uv);
-//    gl_FragColor.rgb += u_diffuse_color;
 }

@@ -1,5 +1,5 @@
-import VertexShader from '../shaders/vertex.glsl';
-import FragmentShader from '../shaders/fragment.glsl';
+import VertexShader from '../shaders/phong.vertex.glsl';
+import FragmentShader from '../shaders/phong.fragment.glsl';
 import { SceneObject } from '../SceneObject/SceneObject';
 import { Scene } from '../Scene';
 import { Mat4Utils } from '../utils/math';
@@ -21,8 +21,6 @@ export class PhongShader extends AbstractShader {
     this.locations['a_position'] = this.gl.getAttribLocation(this.program, 'a_position') as number;
     this.locations['a_normal'] = this.gl.getAttribLocation(this.program, 'a_normal') as number;
     this.locations['a_uv'] = this.gl.getAttribLocation(this.program, 'a_uv') as number;
-    this.locations['a_tangent'] = this.gl.getAttribLocation(this.program, 'a_tangent') as number;
-    this.locations['u_color'] = this.gl.getUniformLocation(this.program, 'u_color') as number;
     this.locations['u_M'] = this.gl.getUniformLocation(this.program, 'u_M') as number;
     this.locations['u_V'] = this.gl.getUniformLocation(this.program, 'u_V') as number;
     this.locations['u_P'] = this.gl.getUniformLocation(this.program, 'u_P') as number;
@@ -34,14 +32,17 @@ export class PhongShader extends AbstractShader {
     this.locations['u_specular_color'] = this.gl.getUniformLocation(this.program, 'u_specular_color') as number;
     this.locations['u_ambient_color'] = this.gl.getUniformLocation(this.program, 'u_ambient_color') as number;
     this.locations['u_camera_position'] = this.gl.getUniformLocation(this.program, 'u_camera_position') as number;
-    this.locations['u_useAmbient'] = this.gl.getUniformLocation(this.program, 'u_useAmbient') as number;
-    this.locations['u_useSpecular'] = this.gl.getUniformLocation(this.program, 'u_useSpecular') as number;
-    this.locations['u_useDiffuse'] = this.gl.getUniformLocation(this.program, 'u_useDiffuse') as number;
-    this.locations['u_useWorldLight'] = this.gl.getUniformLocation(this.program, 'u_useWorldLight') as number;
+    this.locations['u_use_specular_texture'] = this.gl.getUniformLocation(
+      this.program,
+      'u_use_specular_texture',
+    ) as number;
+    this.locations['u_use_diffuse_texture'] = this.gl.getUniformLocation(
+      this.program,
+      'u_use_diffuse_texture',
+    ) as number;
     this.locations['u_hardness'] = this.gl.getUniformLocation(this.program, 'u_hardness') as number;
     this.locations['u_texture_diffuse'] = this.gl.getUniformLocation(this.program, 'u_texture_diffuse') as number;
     this.locations['u_texture_specular'] = this.gl.getUniformLocation(this.program, 'u_texture_specular') as number;
-    this.locations['u_texture_normal'] = this.gl.getUniformLocation(this.program, 'u_texture_normal') as number;
   }
 
   renderObjectOnScene(object: SceneObject, scene: Scene) {
@@ -69,7 +70,6 @@ export class PhongShader extends AbstractShader {
   }
 
   protected bindAdditional(object: SceneObject, scene: Scene) {
-    this.gl.uniform1i(this.locations['u_useWorldLight'], 1);
     this.gl.uniform3fv(this.locations['u_light_position'], scene.lightPosition);
     this.gl.uniform3fv(this.locations['u_camera_position'], scene.cameraPosition);
   }
@@ -91,18 +91,21 @@ export class PhongShader extends AbstractShader {
   }
 
   protected bindObjectMaterial(object: SceneObject) {
-    this.gl.uniform1i(this.locations['u_useAmbient'], object.material.useAmbient);
-    this.gl.uniform1i(this.locations['u_useSpecular'], object.material.useSpecular);
-    this.gl.uniform1i(this.locations['u_useDiffuse'], object.material.useDiffuse);
-
     this.gl.uniform3fv(this.locations['u_diffuse_color'], object.material.diffuseColor);
     this.gl.uniform3fv(this.locations['u_specular_color'], object.material.specularColor);
     this.gl.uniform3fv(this.locations['u_ambient_color'], object.material.ambientColor);
 
     this.gl.uniform1f(this.locations['u_hardness'], object.material.hardness);
 
-    this.gl.uniform1i(this.locations['u_texture_diffuse'], object.material.diffuseTexture.id);
-    this.gl.uniform1i(this.locations['u_texture_specular'], object.material.specularTexture.id);
+    this.gl.uniform1i(this.locations['u_use_diffuse_texture'], object.material.diffuseTexture ? 1 : 0);
+    this.gl.uniform1i(this.locations['u_use_specular_texture'], object.material.specularTexture ? 1 : 0);
+
+    if (object.material.diffuseTexture) {
+      this.gl.uniform1i(this.locations['u_texture_diffuse'], object.material.diffuseTexture.id);
+    }
+    if (object.material.specularTexture) {
+      this.gl.uniform1i(this.locations['u_texture_specular'], object.material.specularTexture.id);
+    }
   }
 
   protected drawObject(object: SceneObject) {

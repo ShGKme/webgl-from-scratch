@@ -17,3 +17,8 @@ declare module '*.bmp' {
   const content: string;
   export default content;
 }
+
+declare module '*.obj' {
+  const content: Mesh;
+  export default content;
+}

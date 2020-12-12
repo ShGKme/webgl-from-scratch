@@ -2,6 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { ESBuildPlugin } = require('esbuild-loader');
+const { EnvironmentPlugin } = require('webpack');
 
 module.exports = {
   entry: './src/index.ts',
@@ -29,7 +30,7 @@ module.exports = {
         exclude: /node_modules/,
         options: {
           loader: 'ts',
-          target: 'es2020',
+          target: 'es2018',
           tsconfigRaw: require('./tsconfig.json'),
         },
       },
@@ -38,13 +39,17 @@ module.exports = {
         type: 'asset/resource',
       },
       {
+        test: /\.obj$/i,
+        type: 'asset/resource',
+      },
+      {
         test: /\.glsl$/,
         use: 'raw-loader',
       },
-      {
-        test: /\.obj$/,
-        loader: 'webpack-obj-loader',
-      },
+      // {
+      //   test: /\.obj$/,
+      //   loader: 'webpack-obj-loader',
+      // },
     ],
   },
 
@@ -57,6 +62,9 @@ module.exports = {
     new HtmlWebpackPlugin({
       title: 'WebGL',
       template: './src/index.html',
+    }),
+    new EnvironmentPlugin({
+      NODE_ENV: 'development',
     }),
     new ESBuildPlugin(),
   ],
