@@ -1,7 +1,7 @@
 import { PhongShader } from './PhongShader';
 import { SceneObject } from '../SceneObject/SceneObject';
-import VertexShader from '../../shaders/tangent/vertex.glsl';
-import FragmentShader from '../../shaders/tangent/fragment.glsl';
+import VertexShader from '../shaders/tangent/vertex.glsl';
+import FragmentShader from '../shaders/tangent/fragment.glsl';
 
 export class NormalMappingShader extends PhongShader {
   static vertexShader: string = VertexShader;

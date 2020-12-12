@@ -1,6 +1,6 @@
 import { SceneObject } from './SceneObject';
 import { Mat4 } from '../../types';
-import { Mat4Utils, Vec3Utils } from '../../utils/math';
+import { Mat4Utils, Vec3Utils } from '../utils/math';
 
 export class Billboard extends SceneObject {
   static billboardMatrix(MV: Mat4): Mat4 {

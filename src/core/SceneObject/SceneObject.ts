@@ -1,9 +1,9 @@
 import { Model } from '../Model';
-import { Vec3 } from '../../types';
-import { Mat4Utils } from '../../utils/math';
+import { Mat4, Vec3 } from '../../types';
+import { Mat4Utils } from '../utils/math';
 import { Material } from '../Material';
 import { Scene } from '../Scene';
-import { ShaderProgramInterface } from '../ShaderPrograms/ShaderProgram.interface';
+import { AbstractShader } from '../Shader/AbstractShader';
 
 /**
  * Model instance placed on the scene
@@ -11,11 +11,12 @@ import { ShaderProgramInterface } from '../ShaderPrograms/ShaderProgram.interfac
 export class SceneObject {
   model: Model | null = null;
   translation: Vec3 = new Float32Array([0, 0, 0]);
-  rotation: Vec3 = new Float32Array([0, 0, 0]);
+  // rotation: Vec3 = new Float32Array([0, 0, 0]);
+  rotation: Mat4 = Mat4Utils.rotation(0, 0, 0);
   scale: Vec3 = new Float32Array([0, 0, 0]);
 
   material: Material;
-  shader: ShaderProgramInterface;
+  shader: AbstractShader;
 
   indexBuffer: WebGLBuffer;
   vertexBuffer: WebGLBuffer;
@@ -37,15 +38,15 @@ export class SceneObject {
     return this;
   }
 
-  setRotation(rotation: Vec3) {
-    this.rotation = rotation;
+  setRotation(x, y, z) {
+    this.rotation = Mat4Utils.rotation(x, y, z);
     return this;
   }
 
   M() {
     let M = Mat4Utils.identity();
     M = Mat4Utils.translate(M, this.translation[0], this.translation[1], this.translation[2]);
-    M = Mat4Utils.rotate(M, this.rotation[0], this.rotation[1], this.rotation[2]);
+    M = Mat4Utils.multiply(M, this.rotation);
     M = Mat4Utils.scale(M, this.scale[0], this.scale[1], this.scale[2]);
     return M;
   }

@@ -1,18 +1,21 @@
 import { SceneObject } from './SceneObject';
 import { Model } from '../Model';
 import { Vec3 } from '../../types';
-import { Vec3Utils } from '../../utils/math';
-import { getImagePixels } from '../../utils/img';
+import { Vec3Utils } from '../utils/math';
+import { getImagePixels } from '../utils/img';
 
 export class Surface extends SceneObject {
   heightmapData: Uint8ClampedArray;
+  depth: 8 | 16 = 8;
   size: number;
 
   constructor() {
     super();
   }
 
-  async generateMesh(heightmapUrl: string, uvRepeats: number = 1) {
+  async generateMesh(heightmapUrl: string, uvRepeats: number = 1, depth: 8 | 16 = 8) {
+    this.depth = depth;
+
     console.log('Start generating heightmap');
     this.model = new Model();
 
@@ -102,9 +105,17 @@ export class Surface extends SceneObject {
   }
 
   heightmapValueAt(x: number, z: number): number {
+    return this.depth === 8 ? this.heightmap8ValueAt(x, z) : this.heightmap16ValueAt(x, z);
+  }
+
+  private heightmap8ValueAt(x: number, z: number): number {
     const [r, g, b] = this.heightmapData.slice((x * this.size + z) * 4, (x * this.size + z) * 4 + 3);
-    const y = r | (g << 8) | (b << 16);
-    return (y / 255 ** 2) * 120;
+    return ((r + g + b) / 255 / 3) * 120;
+  }
+
+  private heightmap16ValueAt(x: number, z: number): number {
+    const [r, g, b] = this.heightmapData.slice((x * this.size + z) * 4, (x * this.size + z) * 4 + 3);
+    return ((r | (g << 8) | (b << 16)) / 255 ** 2) * 120;
   }
 
   height(x: number, z: number) {

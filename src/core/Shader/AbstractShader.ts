@@ -1,7 +1,7 @@
-import VertexShader from '../../shaders/vertex.glsl';
-import FragmentShader from '../../shaders/fragment.glsl';
+import VertexShader from '../shaders/vertex.glsl';
+import FragmentShader from '../shaders/fragment.glsl';
 import { LocationsMap } from '../Locations';
-import { initShaderProgram } from '../../utils/webgl';
+import { initShaderProgram } from '../utils/webgl';
 import { SceneObject } from '../SceneObject/SceneObject';
 import { Scene } from '../Scene';
 
@@ -23,11 +23,7 @@ export class AbstractShader {
     this.getLocations();
   }
 
-  protected configure() {
-    // this.gl.enable(this.gl.CULL_FACE);
-    // this.gl.enable(this.gl.DEPTH_TEST);
-    // this.gl.getExtension('OES_element_index_uint');
-  }
+  protected configure() {}
 
   protected use() {
     this.configure();

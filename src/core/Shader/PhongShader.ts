@@ -1,8 +1,8 @@
-import VertexShader from '../../shaders/vertex.glsl';
-import FragmentShader from '../../shaders/fragment.glsl';
+import VertexShader from '../shaders/vertex.glsl';
+import FragmentShader from '../shaders/fragment.glsl';
 import { SceneObject } from '../SceneObject/SceneObject';
 import { Scene } from '../Scene';
-import { Mat4Utils } from '../../utils/math';
+import { Mat4Utils } from '../utils/math';
 import { AbstractShader } from './AbstractShader';
 
 export class PhongShader extends AbstractShader {
@@ -91,12 +91,14 @@ export class PhongShader extends AbstractShader {
   }
 
   protected bindObjectMaterial(object: SceneObject) {
-    this.gl.uniform3fv(this.locations['u_diffuse_color'], object.material.diffuseColor);
-    this.gl.uniform3fv(this.locations['u_specular_color'], object.material.specularColor);
-    this.gl.uniform3fv(this.locations['u_ambient_color'], object.material.ambientColor);
     this.gl.uniform1i(this.locations['u_useAmbient'], object.material.useAmbient);
     this.gl.uniform1i(this.locations['u_useSpecular'], object.material.useSpecular);
     this.gl.uniform1i(this.locations['u_useDiffuse'], object.material.useDiffuse);
+
+    this.gl.uniform3fv(this.locations['u_diffuse_color'], object.material.diffuseColor);
+    this.gl.uniform3fv(this.locations['u_specular_color'], object.material.specularColor);
+    this.gl.uniform3fv(this.locations['u_ambient_color'], object.material.ambientColor);
+
     this.gl.uniform1f(this.locations['u_hardness'], object.material.hardness);
 
     this.gl.uniform1i(this.locations['u_texture_diffuse'], object.material.diffuseTexture.id);

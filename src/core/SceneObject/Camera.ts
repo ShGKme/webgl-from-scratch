@@ -1,6 +1,6 @@
 import { SceneObject } from './SceneObject';
 import { Vec3 } from '../../types';
-import { Mat4Utils } from '../../utils/math';
+import { Mat4Utils } from '../utils/math';
 import { Surface } from './Surface';
 
 function wrap(a: number, min: number, max: number) {
