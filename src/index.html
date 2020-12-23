@@ -1,48 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>WebGL</title>
-  <style>
-    html,
-    body {
+  <head>
+    <meta charset="UTF-8" />
+    <title>WebGL</title>
+    <style>
+      html,
+      body {
         margin: 0;
         padding: 0;
         height: 100vh;
         width: 100vw;
+        max-height: 100vh;
+        max-width: 100vw;
         background-color: #000;
-        font-family: "Open Sans", "Roboto";
-        font-size: 20px;
-    }
-
-    #canvas {
-      width: 100vw;
-      height: 100vh;
-    }
-
-    #loader {
+        font-family: "Courier New", "Consolas", monospace;
+        font-size: 18px;
         color: white;
-      position: fixed;
+      }
+
+      #canvas {
+        width: 100vw;
+        height: 100vh;
+      }
+
+      #placeholder {
+        background-color: black;
+        position: fixed;
         top: 0;
         left: 0;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-        align-items: center;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: stretch;
         justify-content: center;
         flex-direction: column;
-    }
-    #loader p{
-        width: 200px;
-    }
-  </style>
-</head>
-<body>
+          padding: 0 12vw;
+      }
+
+      #loader {
+          width: 75%;
+      }
+
+      #loader div {
+        /*width: 50%;*/
+      }
+
+      .resource-item{
+          font-size: 12px;
+      }
+      .resource-item-waiting {
+          color: lightgray;
+      }
+      .resource-item-loading {
+            color: orange;
+      }
+      .resource-item-done {
+          color: greenyellow;
+      }
+      .resource-item-error {
+          color: darkred;
+      }
+
+      #start-buttons button {
+          border: 4px solid lightgray;
+          padding: 4px 6px;
+          color: inherit;
+          font-size: inherit;
+          margin: 0 24px;
+          background-color: #333;
+      }
+
+
+    </style>
+  </head>
+  <body>
     <canvas id="canvas"></canvas>
-    <!--<div id="loader">-->
-    <!--    <p>Loading Models</p>-->
-    <!--    <p>Loading Textures</p>-->
-    <!--    <p>Generating Surface</p>-->
-    <!--</div>-->
-</body>
+    <div id="placeholder">
+        <p><b>WASD</b> = move; <b>SHIFT</b> = run; <b>Click On Cubes</b> = pick.</p>
+        <p id="loader"></p>
+        <p id="initializing" style="visibility: hidden">Generating Surface and tangents</p>
+        <p id="not-ready-for-vr" style="display: none; color: darkred">DeviceOrientation is not supported...</p>
+        <p id="start-buttons" style="visibility: hidden">
+            <button type="button" id="btn-start">Start</button>
+            <button type="button" id="btn-start-vr">Start VR</button>
+        </p>
+    </div>
+
+  </body>
 </html>

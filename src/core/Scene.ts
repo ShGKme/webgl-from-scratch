@@ -1,5 +1,4 @@
-import { Mat4, Vec3 } from '../types';
-import { degToRad, Mat4Utils } from './utils/math';
+import { degToRad, Mat4, Mat4Utils, Vec3 } from './utils/math';
 import { SceneObject } from './SceneObject/SceneObject';
 import { Camera } from './SceneObject/Camera';
 import { PickShader } from './Shader';

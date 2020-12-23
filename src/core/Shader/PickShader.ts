@@ -1,5 +1,5 @@
-import VertexShader from '../shaders/pick.vertex.glsl';
-import FragmentShader from '../shaders/pick.fragment.glsl';
+import VertexShader from '../glsl/pick.vertex.glsl';
+import FragmentShader from '../glsl/pick.fragment.glsl';
 import { SceneObject } from '../SceneObject/SceneObject';
 import { Scene } from '../Scene';
 import { Mat4Utils, Vec3Utils } from '../utils/math';
@@ -26,31 +26,22 @@ export class PickShader extends AbstractShader {
     this.locations['u_diffuse_color'] = this.gl.getUniformLocation(this.program, 'u_diffuse_color') as number;
   }
 
-  renderObjectOnScene(object: PickableSceneObject, scene: Scene) {
-    super.renderObjectOnScene(object, scene);
-
-    this.bindObjectMatrices(object, scene);
-    this.bindObjectMesh(object);
-    this.bindObjectMaterial(object);
-    this.drawObject(object);
-  }
-
-  private bindObjectMatrices(object: SceneObject, scene: Scene) {
+  protected bindMatrices(object: SceneObject, scene: Scene) {
     const MVP = Mat4Utils.multiply(Mat4Utils.multiply(scene.P, scene.V), object.M());
     this.gl.uniformMatrix4fv(this.locations['u_MVP'], false, MVP);
   }
 
-  private bindObjectMesh(object: PickableSceneObject) {
+  protected bindObjectMesh(object: PickableSceneObject) {
     this.gl.enableVertexAttribArray(this.locations['a_position']);
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.vertexBuffer);
     this.gl.vertexAttribPointer(this.locations['a_position'], 3, this.gl.FLOAT, false, 0, 0);
   }
 
-  private bindObjectMaterial(object: PickableSceneObject) {
+  protected bindObjectMaterial(object: PickableSceneObject) {
     this.gl.uniform3fv(this.locations['u_diffuse_color'], Vec3Utils.factor(object.pickColor, 1 / 255));
   }
 
-  private drawObject(object: PickableSceneObject) {
+  protected drawObject(object: PickableSceneObject) {
     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, object.indexBuffer);
     this.gl.drawElements(this.gl.TRIANGLES, object.model.indices.length, this.gl.UNSIGNED_INT, 0);
   }

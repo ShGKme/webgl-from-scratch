@@ -1,6 +1,12 @@
 // Some objects were taken from webglfundomentals.org
 
-import { Mat3, Mat4, Vec3, Vec4 } from '../../types';
+export type Vec2 = Float32Array;
+export type Vec3 = Float32Array;
+export type Vec4 = Float32Array;
+export type Mat3 = Float32Array;
+export type Mat4 = Float32Array;
+
+export type Color = Vec3;
 
 export const Vec3Utils = {
   // v * n

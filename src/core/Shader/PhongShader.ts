@@ -1,5 +1,5 @@
-import VertexShader from '../shaders/phong.vertex.glsl';
-import FragmentShader from '../shaders/phong.fragment.glsl';
+import VertexShader from '../glsl/phong.vertex.glsl';
+import FragmentShader from '../glsl/phong.fragment.glsl';
 import { SceneObject } from '../SceneObject/SceneObject';
 import { Scene } from '../Scene';
 import { Mat4Utils } from '../utils/math';
@@ -43,17 +43,6 @@ export class PhongShader extends AbstractShader {
     this.locations['u_hardness'] = this.gl.getUniformLocation(this.program, 'u_hardness') as number;
     this.locations['u_texture_diffuse'] = this.gl.getUniformLocation(this.program, 'u_texture_diffuse') as number;
     this.locations['u_texture_specular'] = this.gl.getUniformLocation(this.program, 'u_texture_specular') as number;
-  }
-
-  renderObjectOnScene(object: SceneObject, scene: Scene) {
-    super.renderObjectOnScene(object, scene);
-
-    this.bindMatrices(object, scene);
-    this.bindAdditional(object, scene);
-    this.bindObjectMesh(object);
-    this.bindObjectMaterial(object);
-
-    this.drawObject(object);
   }
 
   protected bindMatrices(object: SceneObject, scene: Scene) {

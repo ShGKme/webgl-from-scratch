@@ -2,7 +2,6 @@ import { SceneObject } from './SceneObject';
 import { Model } from '../Model';
 import { Vec3 } from '../../types';
 import { Vec3Utils } from '../utils/math';
-import { getImagePixels } from '../utils/img';
 
 export class Surface extends SceneObject {
   heightmapData: Uint8ClampedArray;
@@ -13,16 +12,15 @@ export class Surface extends SceneObject {
     super();
   }
 
-  async generateMesh(heightmapUrl: string, uvRepeats: number = 1, depth: 8 | 16 = 8) {
+  generateMesh(heightmapData: Uint8ClampedArray, uvRepeats: number = 1, depth: 8 | 16 = 8) {
     this.depth = depth;
 
-    console.log('Start generating heightmap');
     this.model = new Model();
 
-    console.log('Start loading heightmap');
-    this.heightmapData = await getImagePixels(heightmapUrl);
+    this.heightmapData = heightmapData;
     this.size = Math.ceil(Math.sqrt(this.heightmapData.length / 4));
-    console.log(`Heightmap ${this.size}x${this.size} is loaded`);
+
+    console.log(`Start generating Surface`);
 
     this.generateVertices();
     this.generateIndices();
@@ -30,7 +28,7 @@ export class Surface extends SceneObject {
     this.generateNormals();
     this.model.generateTangent();
 
-    console.log('Finish loading heightmap');
+    console.log('Finish generating surface');
   }
 
   private generateVertices() {
